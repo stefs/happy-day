@@ -61,6 +61,7 @@ class HappyDay(QMainWindow):
         widget = QWidget()
         widget.setLayout(layout)
         self.setCentralWidget(widget)
+        self.setWindowTitle('Happy Day')
         # attributes
         self.progress_values: Optional[list[Progress]] = None
         self.progress_width_offset: Optional[int] = None
