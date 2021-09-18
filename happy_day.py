@@ -29,14 +29,21 @@ class Phase(object):
 
 @dataclass
 class Progress(object):
-    value: float
-    total: float
+    value: timedelta
+    total: timedelta
+
+    def __post_init__(self) -> None:
+        self.value = max(min(self.value, self.total), timedelta())
+
+    @property
+    def remaining(self) -> timedelta:
+        return self.total - self.value
 
 
 class HappyDay(QMainWindow):
     PHASES = [
-        Phase(name='Wake', start=time(hour=7)),
-        Phase(name='Sleep', start=time(hour=23))]
+        Phase(name='Wake', start=time(hour=7, minute=30)),
+        Phase(name='Sleep', start=time(hour=23, minute=30))]
 
     def __init__(self) -> None:
         super().__init__()
@@ -45,8 +52,9 @@ class HappyDay(QMainWindow):
         self.progress_bars = []
         for index, phase in enumerate(self.PHASES):
             layout.addWidget(QLabel(phase.name), index, 0)
+            layout.addWidget(QLabel(f'{phase.start:%H:%M}'), index, 1)
             progress_bar = QProgressBar()
-            layout.addWidget(progress_bar, index, 1)
+            layout.addWidget(progress_bar, index, 2)
             self.progress_bars.append(progress_bar)
         widget = QWidget()
         widget.setLayout(layout)
@@ -84,18 +92,20 @@ class HappyDay(QMainWindow):
 
     def update_status(self) -> None:
         now = datetime.now()
+        day = now.date() if now.time() > self.PHASES[0].start else now.date() - timedelta(days=1)
         # calculate start times
-        start_times = [datetime.combine(now.date(), phase.start) for phase in self.PHASES]
-        start_times.append(datetime.combine(now.date() + timedelta(days=1), self.PHASES[0].start))
+        start_times = [datetime.combine(day, phase.start) for phase in self.PHASES]
+        start_times.append(datetime.combine(day + timedelta(days=1), self.PHASES[0].start))
         self.progress_values = [
             Progress(
-                value=(now - start_times[index]).total_seconds(),
-                total=(start_times[index + 1] - start_times[index]).total_seconds())
+                value=now - start_times[index],
+                total=start_times[index + 1] - start_times[index])
             for index in range(len(self.progress_bars))]
         # set progress bars values
         for progress_bar, progress in zip(self.progress_bars, self.progress_values):
-            progress_bar.setMaximum(progress.total)
-            progress_bar.setValue(progress.value)
+            progress_bar.setMaximum(int(progress.total.total_seconds()))
+            progress_bar.setValue(max(int(progress.value.total_seconds()), 1))
+            progress_bar.setFormat(f'{progress.remaining.total_seconds() / 3600:.1f} h')
         # set progress bar widths
         self.update_progress_width(self.width(), self.width())
 
