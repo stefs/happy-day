@@ -44,7 +44,7 @@ class Progress(object):
 
 class HappyDay(QMainWindow):
     PHASES = [
-        Phase(name='Wake', start=time(hour=7, minute=30)),
+        Phase(name='Wake', start=time(hour=8)),
         Phase(name='Sleep', start=time(hour=23, minute=30))]
 
     def __init__(self) -> None:
