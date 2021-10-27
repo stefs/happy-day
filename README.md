@@ -1,6 +1,6 @@
 # Happy Day
 
-Don't lose track of the time. Also, 24 hours is actually quite a lot of hours!
+Don't lose track of the time. 24 hours is quite a lot of hours!
 
 ![Screenshot](screenshot.png)
 
